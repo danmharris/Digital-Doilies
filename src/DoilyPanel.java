@@ -4,7 +4,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Stack;
 
 import javax.swing.JButton;
@@ -16,9 +18,8 @@ import javax.swing.JPanel;
  *
  */
 public class DoilyPanel extends JPanel{
-	private ArrayList<DrawPoint> points = new ArrayList<DrawPoint>(); // Stores all the points on the screen
-	private Stack<ArrayList<DrawPoint>> history = new Stack<ArrayList<DrawPoint>>(); // Stack of previous drawings (for undo)
-	private DrawPoint currentPoint = null; // Point where mouse cursor currently is (used for point preview) 
+	private Stack<DrawStroke> strokes = new Stack<DrawStroke>();
+	private DrawStroke mouseStroke =null;
 
 	private JButton undoBtn; // Undo button as stack needs to control whether this is enabled
 
@@ -56,8 +57,8 @@ public class DoilyPanel extends JPanel{
 	 * Erases the current drawing (but not history). The old drawing is added to the history stack
 	 */
 	public void clear(){
-		this.saveState();
-		this.points.clear();
+		this.strokes.clear();
+		this.undoBtn.setEnabled(false);
 		this.repaint();
 	}
 
@@ -112,20 +113,13 @@ public class DoilyPanel extends JPanel{
 	}
 
 	/**
-	 * Saves the current state of the image by pushing all the points onto the stack
-	 */
-	public void saveState(){
-		this.history.push(new ArrayList<DrawPoint>(points));
-	}
-
-	/**
 	 * Undoes a previous action by popping off the stack and replacing the current points array with it.
 	 * Disables undo button if now empty
 	 */
 	public void undo(){
-		this.points = this.history.pop();;
+		this.strokes.pop();
 		this.repaint();
-		if (this.history.isEmpty()){
+		if (this.strokes.isEmpty()){
 			this.undoBtn.setEnabled(false);
 		}
 	}
@@ -144,36 +138,33 @@ public class DoilyPanel extends JPanel{
 		this.centX = (this.getWidth()/2);
 		this.centY = (this.getHeight()/2);
 
+		
 		Graphics2D g2d = (Graphics2D) g;
+		g2d.translate(centX, centY);
 		if (sectorLinesVisible){
 			this.paintSectorLines(g2d);
 		}
-
-		if (this.currentPoint!=null){
-			g2d.setColor(this.currentPoint.getColour());
-			g2d.fillOval(this.currentPoint.getX(), this.currentPoint.getY(), this.currentPoint.getDiameter(), this.currentPoint.getDiameter());
-		}
-
-		if (points.size() > 0){
-			// Iterates through each point currently saved
-			for (DrawPoint p : points){
-				g2d.setColor(p.getColour()); // Sets colour of pen to the colour of the pen
-				
-				// Repeats for each sector (for rotation)
-				for (int i = 0; i < sectorCount; i++){
-					// If there is no previous point attached to the point (either single click or start of drag), just draw oval
-					if (p.getPrevious() == null){
-					g2d.fillOval(this.centX+p.getX(),this.centY+p.getY(), p.getDiameter(), p.getDiameter());
-					} else {
-						// Otherwise draw a line between the previous point and this one
-						DrawPoint prev = p.getPrevious();
-						g2d.setStroke(new BasicStroke(p.getDiameter(),BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
-						g2d.drawLine(this.centX+prev.getX(), this.centY+prev.getY(), this.centX+p.getX(), this.centY+p.getY());
-					}
-					// Rotate drawing context to allow points to be drawn in all sectors
-					g2d.rotate(2*Math.PI/sectorCount, centX, centY);
+		
+		Iterator<DrawStroke> it = this.strokes.iterator();
+		while (it.hasNext()){			
+			DrawStroke curr = it.next();
+			g2d.setColor(curr.getColour());
+			g2d.setStroke(new BasicStroke(curr.getDiameter(),BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
+			for (int i = 0; i < sectorCount; i++){
+				g2d.draw(curr);
+				if (curr.isReflected()){
+					g2d.scale(-1, 1);
+					g2d.draw(curr);
+					g2d.scale(-1, 1);
 				}
+				g2d.rotate(2*Math.PI/sectorCount);
 			}
+		}
+		
+		if (this.mouseStroke!=null){
+			g2d.setColor(this.mouseStroke.getColour());
+			g2d.setStroke(new BasicStroke(this.mouseStroke.getDiameter(),BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
+			g2d.draw(this.mouseStroke);
 		}
 	}
 
@@ -184,8 +175,8 @@ public class DoilyPanel extends JPanel{
 	public void paintSectorLines(Graphics2D g2d){
 		g2d.setColor(Color.WHITE);
 		for (int i = 0; i < sectorCount; i++){
-			g2d.drawLine(centX, centY, centX, 0);
-			g2d.rotate(2*Math.PI/sectorCount, centX, centY);
+			g2d.drawLine(0, 0, 0, -(getHeight()/2));
+			g2d.rotate(2*Math.PI/sectorCount);
 		}
 	}
 
@@ -196,15 +187,14 @@ public class DoilyPanel extends JPanel{
 	 * @author dan
 	 */
 	class DoilyMouseListener extends MouseAdapter{
-		DrawPoint previousPoint; // Previous point added, allows connecting of points
-		DrawPoint previousReflectPoint; // Previous reflected point added, allows connecting of points
+		DrawStroke currentStroke = null;
 
 		/**
 		 * If the mouse is dragged, add a point to the array and connect it to the previous point
 		 */
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			addPoint(e, true);
+			addPoint(e);
 		}
 
 		/**
@@ -213,9 +203,10 @@ public class DoilyPanel extends JPanel{
 		 */
 		@Override
 		public void mousePressed(MouseEvent e) {
-			saveState();
-			currentPoint = null;
-			addPoint(e,false);
+			mouseStroke = null;
+			this.currentStroke = new DrawStroke(diameter,colour,reflect);
+			strokes.push(this.currentStroke);
+			addPoint(e);
 		}
 
 		/**
@@ -223,7 +214,7 @@ public class DoilyPanel extends JPanel{
 		 */
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			currentPoint = new DrawPoint(e.getX(),e.getY(),diameter,colour);
+			mouseStroke = new DrawStroke(e.getX()-centX,e.getY()-centY, diameter, colour);
 			repaint();
 		}
 
@@ -232,7 +223,7 @@ public class DoilyPanel extends JPanel{
 		 */
 		@Override
 		public void mouseExited(MouseEvent e) {
-			currentPoint = null;
+			mouseStroke = null;
 			repaint();
 		}
 
@@ -241,27 +232,12 @@ public class DoilyPanel extends JPanel{
 		 * @param e MouseEvent so that co-ordinates of click/drag can be determined
 		 * @param connect Whether this point should be connected to the previous one
 		 */
-		public void addPoint(MouseEvent e, boolean connect){
-			// Creates a new DrawPoint. The co-ordinates saved are relative to the centre to allow for dynamic frame resizing
-			DrawPoint dp = new DrawPoint(e.getX()-centX,e.getY()-centY,diameter,colour);
-			points.add(dp);
-			// If this point needs to be connected to the previous one, attach the previous one to it
-			if (connect){
-				dp.setPrevious(previousPoint);
-			}
-			previousPoint = dp; // Update itself as the new previous point
-		
-			// If the point needs to be reflected in each sector
-			if (reflect){
-				// Similar point to above, however the relative x to centre is inversed (reflected across centre Y axis_
-				DrawPoint dpReflect = new DrawPoint(-(e.getX()-centX),e.getY()-centY,diameter,colour);
-				points.add(dpReflect);
-				// If this point needs to be connected to previous one attach it
-				if (connect){
-					dpReflect.setPrevious(previousReflectPoint);
-				}
-				previousReflectPoint = dpReflect; // Sets itself as new previous point
-			}
+		public void addPoint(MouseEvent e){
+			double relX = e.getX()-centX;
+			double relY = e.getY()-centY;
+			
+			this.currentStroke.addPoint(relX, relY);
+
 			repaint();
 			undoBtn.setEnabled(true); // Allow the image to now be undone
 		}

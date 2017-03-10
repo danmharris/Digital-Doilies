@@ -1,6 +1,9 @@
 import java.awt.Color;
 
 /**
+ * @deprecated
+ * NOTE: THIS CLASS IS NO LONGER BEING USED - USE DRAWSTROKE INSTEAD
+ * 
  * Represents an individual point which is displayed on the screen. Stores properties such as its relative position,
  * colour, diameter and the previous point (if in line)
  * @author dan
