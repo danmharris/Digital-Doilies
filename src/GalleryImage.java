@@ -5,6 +5,7 @@ import java.awt.Image;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
+import java.util.Stack;
 
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -16,6 +17,7 @@ import javax.swing.JToggleButton;
  *
  */
 public class GalleryImage extends JToggleButton{
+	private Stack<DrawStroke> strokes;
 	private BufferedImage im; // Buffered image containing actual drawing
 	private boolean selected = false; // Whether the image is currently selected
 	
@@ -24,7 +26,10 @@ public class GalleryImage extends JToggleButton{
 	 * @param panel Panel that contains the drawing to be saved
 	 * @param width The width of the image
 	 */
-	public GalleryImage(JPanel panel, int width){
+	public GalleryImage(DoilyPanel panel, int width){
+		this.strokes = new Stack<DrawStroke>();
+		this.strokes.addAll(panel.getStrokes());
+		
 		// Creates new image that is direct copy of what is on the panel
 		BufferedImage im = new BufferedImage(panel.getWidth(),panel.getHeight(),BufferedImage.TYPE_INT_ARGB);
 		panel.paint(im.getGraphics());
@@ -70,6 +75,10 @@ public class GalleryImage extends JToggleButton{
 			g.setClip(5,5,this.getWidth()-10,this.getHeight()-10);
 		}
 		g.drawImage(im, 0, 0,null); // Paints the BufferedImage onto the component
+	}
+	
+	public Stack<DrawStroke> getStrokes(){
+		return this.strokes;
 	}
 
 }

@@ -123,6 +123,15 @@ public class DoilyPanel extends JPanel{
 			this.undoBtn.setEnabled(false);
 		}
 	}
+	
+	public Stack<DrawStroke> getStrokes(){
+		return this.strokes;
+	}
+	
+	public void setStrokes(Stack<DrawStroke> strokes){
+		this.strokes = strokes;
+		repaint();
+	}
 
 	/// GRAPHICS FUNCTIONS ///
 
@@ -175,7 +184,11 @@ public class DoilyPanel extends JPanel{
 	public void paintSectorLines(Graphics2D g2d){
 		g2d.setColor(Color.WHITE);
 		for (int i = 0; i < sectorCount; i++){
-			g2d.drawLine(0, 0, 0, -(getHeight()/2));
+			if (getHeight() > getWidth()){
+				g2d.drawLine(0, 0, 0, -(getHeight()/2));
+			} else {
+				g2d.drawLine(0, 0, -(getWidth()/2), 0);
+			}
 			g2d.rotate(2*Math.PI/sectorCount);
 		}
 	}

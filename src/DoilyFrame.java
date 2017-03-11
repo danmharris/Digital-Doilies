@@ -42,6 +42,7 @@ public class DoilyFrame extends JFrame{
 	private JCheckBox reflectToggle; // Toggle whether drawn points should be reflected in each sector
 	private JButton saveBtn; // Saves current image state into the gallery
 	private JButton removeBtn; // Removes selected image from the gallery
+	private JButton loadBtn;
 	
 	private JPanel galleryPanel; // Holds all the gallery images
 	private JScrollPane galleryScroll; // Allows galleryPanel to scroll
@@ -114,6 +115,7 @@ public class DoilyFrame extends JFrame{
 		// Gallery logic more complex so separated into inner classes
 		saveBtn.addActionListener(new SaveButtonListener());
 		removeBtn.addActionListener(new RemoveButtonListener());
+		loadBtn.addActionListener(new LoadButtonListener());
 	}
 	
 	/**
@@ -128,11 +130,11 @@ public class DoilyFrame extends JFrame{
 		this.sectorLbl = new JLabel("Sector Count");
 		sectorLbl.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		this.sectorSpin = new JSpinner(new SpinnerNumberModel(DigitalDoily.START_SECTOR_COUNT,2,24,1)); // Minimum value set as 2, max 24 with step 1
+		this.sectorSpin = new JSpinner(new SpinnerNumberModel(DigitalDoily.START_SECTOR_COUNT,DigitalDoily.MIN_SECTORS,DigitalDoily.MAX_SECTORS,1)); // Minimum value set as 2, max 24 with step 1
 		this.sizeLbl = new JLabel("Size of pen:");
 		sizeLbl.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		this.sizeSlider = new JSlider(2,20,DigitalDoily.START_DIAMETER);
+		this.sizeSlider = new JSlider(DigitalDoily.MIN_DIAMETER,DigitalDoily.MAX_DIAMETER,DigitalDoily.START_DIAMETER);
 		sizeSlider.setMinorTickSpacing(1);
 		sizeSlider.setPaintTicks(true);
 		
@@ -145,6 +147,7 @@ public class DoilyFrame extends JFrame{
 		
 		this.saveBtn = new JButton("Save");
 		this.removeBtn = new JButton("Remove");
+		this.loadBtn = new JButton("Load");
 		dp = new DoilyPanel(undoBtn);
 		
 		// Gallery panel initialised and attached to scroll pane
@@ -201,7 +204,12 @@ public class DoilyFrame extends JFrame{
 		JPanel sidePanel = new JPanel();
 		sidePanel.setLayout(new BorderLayout());
 		sidePanel.add(galleryScroll,BorderLayout.CENTER);
-		sidePanel.add(removeBtn, BorderLayout.SOUTH);		
+		
+		JPanel galleryControl = new JPanel();
+		galleryControl.setLayout(new GridLayout(1,2));
+		galleryControl.add(removeBtn);	
+		galleryControl.add(loadBtn);
+		sidePanel.add(galleryControl, BorderLayout.SOUTH);
 		
 		// Adding Containers to main panel
 		panel.add(dp,BorderLayout.CENTER);
@@ -248,7 +256,7 @@ public class DoilyFrame extends JFrame{
 			imageGroup.add(image);
 			galleryScroll.revalidate();
 			galleryScroll.repaint();
-			if (images.size() == 12){
+			if (images.size() == DigitalDoily.MAX_GALLERY){
 				saveBtn.setEnabled(false);
 			}
 		}
@@ -280,9 +288,26 @@ public class DoilyFrame extends JFrame{
 					if (!saveBtn.isEnabled()){
 						saveBtn.setEnabled(true);
 					}
+					break;
 				}
 			}
 		}
+	}
+	
+	class LoadButtonListener implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			Iterator<GalleryImage> it = images.iterator();
+			while (it.hasNext()){
+				GalleryImage gi = it.next();
+				if (gi.isSelected()){
+					dp.setStrokes(gi.getStrokes());
+					break;
+				}
+			}
+		}
+		
 	}
 
 	
