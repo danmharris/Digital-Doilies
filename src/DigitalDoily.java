@@ -15,7 +15,7 @@ public class DigitalDoily {
 	public static final int MIN_DIAMETER = 2;
 	public static final int MAX_DIAMETER = 20;
 	public static final int MIN_SECTORS = 2;
-	public static final int MAX_SECTORS = 36;
+	public static final int MAX_SECTORS = 24;
 	public static final int MAX_GALLERY = 12;
 	
 	/**

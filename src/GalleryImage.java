@@ -7,7 +7,6 @@ import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.util.Stack;
 
-import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 /**
@@ -28,7 +27,7 @@ public class GalleryImage extends JToggleButton{
 	 */
 	public GalleryImage(DoilyPanel panel, int width){
 		this.strokes = new Stack<DrawStroke>();
-		this.strokes.addAll(panel.getStrokes());
+		this.strokes.addAll(panel.getDoilyDrawing().getStrokes());
 		
 		// Creates new image that is direct copy of what is on the panel
 		BufferedImage im = new BufferedImage(panel.getWidth(),panel.getHeight(),BufferedImage.TYPE_INT_ARGB);
