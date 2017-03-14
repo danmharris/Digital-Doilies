@@ -57,7 +57,7 @@ public class DoilyDrawing {
 			this.clearedDrawings.push(this.strokes);
 			this.strokes = new Stack<DrawStroke>();
 			this.strokes.clear();
-			dp.doCompleteRedraw();
+			dp.redrawImage();
 		}
 	}
 
@@ -99,7 +99,7 @@ public class DoilyDrawing {
 	 */
 	public void setSectorLineVisible(boolean visible){
 		this.sectorLinesVisible = visible;
-		dp.doCompleteRedraw();
+		dp.redrawImage();
 	}
 
 	/**
@@ -108,7 +108,7 @@ public class DoilyDrawing {
 	 */
 	public void setSectorCount(int sectorCount){
 		this.sectorCount = sectorCount;
-		dp.doCompleteRedraw();
+		dp.redrawImage();
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class DoilyDrawing {
 		} else if (!this.strokes.isEmpty()){
 			this.strokes.pop();
 		}
-		dp.doCompleteRedraw(); // Forces a full redraw of the image (not buffered)
+		dp.redrawImage(); // Forces a full redraw of the image (not buffered)
 
 		// Disables the Undo Button if stack now empty (if present)
 		if (this.strokes.isEmpty() && this.clearedDrawings.isEmpty() && this.undoBtn != null){

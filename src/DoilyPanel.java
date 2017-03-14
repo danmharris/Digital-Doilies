@@ -18,7 +18,6 @@ import javax.swing.JPanel;
 public class DoilyPanel extends JPanel{
 	private DoilyDrawing dd; // DoilyDrawing which this panel is drawing
 	private int centX, centY; // Centre position of the panel
-	private boolean doCompleteRedraw = false; // States whether the next draw of points should be a complete redraw
 	private BufferedImage currentDrawing; // Stores a cache of the current image to improve performance
 	
 	/**
@@ -27,19 +26,22 @@ public class DoilyPanel extends JPanel{
 	public DoilyPanel(){		
 		this.setBackground(Color.BLACK);
 		this.dd = new DoilyDrawing(this);
-
+		
 		// Attaches listeners that control drawing
 		DoilyMouseListener listener = new DoilyMouseListener();
 		this.addMouseListener(listener);
 		this.addMouseMotionListener(listener);
 		
-		// Forces the panel to do a complete redraw if the window is resized (prevents glitch with sector lines)
 		this.addComponentListener(new ComponentAdapter(){
 			@Override
 			public void componentResized(ComponentEvent e) {
-				doCompleteRedraw();
+				redrawImage();
 			}
 		});
+	}
+
+	public void init(){
+		this.currentDrawing = new BufferedImage(getWidth(),getHeight(),BufferedImage.TYPE_INT_ARGB);
 	}
 	
 	/**
@@ -53,9 +55,12 @@ public class DoilyPanel extends JPanel{
 	/**
 	 * Forces a complete redraw of the image to the BufferedImage cache
 	 */
-	public void doCompleteRedraw(){
-		this.doCompleteRedraw = true;
-		updateImage();
+	public void redrawImage(){
+		init();
+		Iterator<DrawStroke> it = this.dd.getStrokes().iterator();
+		while (it.hasNext()){			
+			this.paintStroke(it.next());
+		}
 		repaint();
 	}
 	
@@ -77,27 +82,12 @@ public class DoilyPanel extends JPanel{
 		if (this.dd.drawSectorLines()){
 			this.paintSectorLines(g2d);
 		}
-				
-		// Either iterates through all of the points if redraw full, or just draw the bufferedImage cache
-		if (this.doCompleteRedraw){
-				// Iterates through the stack to draw all the strokes
-				Iterator<DrawStroke> it = this.dd.getStrokes().iterator();
-				while (it.hasNext()){			
-					this.paintStroke(g2d, it.next());
-				}
-				this.doCompleteRedraw = false;
-		} else {
-			if (this.currentDrawing != null){
-				int height = this.currentDrawing.getHeight();
-				int width = this.currentDrawing.getWidth();
-				g2d.drawImage(this.currentDrawing, -(width/2), -(height/2), width, height, null);
-			}
-
-			if (!this.dd.getStrokes().isEmpty()){
-				this.paintStroke(g2d, this.dd.getStrokes().peek());
-			}
-			
-		} 
+		
+		if (this.currentDrawing != null){
+			int height = this.currentDrawing.getHeight();
+			int width = this.currentDrawing.getWidth();
+			g2d.drawImage(this.currentDrawing, -(width/2), -(height/2), null);
+		}			
 			
 		// If the mouse is in the panel then paint it
 		if (this.dd.getMouseStroke()!=null){
@@ -113,7 +103,9 @@ public class DoilyPanel extends JPanel{
 	 * @param g2d Graphics context to draw this to
 	 * @param ds DrawStroke object to draw
 	 */
-	private void paintStroke(Graphics2D g2d, DrawStroke ds){
+	private void paintStroke(DrawStroke ds){
+		Graphics2D g2d = this.currentDrawing.createGraphics();
+		g2d.translate(getWidth()/2, getHeight()/2);
 		g2d.setColor(ds.getColour());
 		g2d.setStroke(new BasicStroke(ds.getDiameter(),BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
 		for (int i = 0; i < this.dd.getSectorCount(); i++){
@@ -144,16 +136,6 @@ public class DoilyPanel extends JPanel{
 		}
 	}
 	
-	/**
-	 * Updates the BufferedImage cache by doing a full redraw to the BufferedImage
-	 */
-	private void updateImage(){
-		BufferedImage newDrawing = new BufferedImage(getWidth(),getHeight(),BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g2d = newDrawing.createGraphics();
-		paintComponent(g2d);
-		currentDrawing = newDrawing;
-	}
-
 	/// PANEL LISTENER ///
 
 	/**
@@ -161,7 +143,6 @@ public class DoilyPanel extends JPanel{
 	 * @author dan
 	 */
 	class DoilyMouseListener extends MouseAdapter{
-		DrawStroke currentStroke = null;
 		int pointCount;
 	
 		/**
@@ -170,8 +151,8 @@ public class DoilyPanel extends JPanel{
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			dd.newPoint(e.getX()-centX, e.getY()-centY, false);
+			paintStroke(dd.getStrokes().peek());
 			if (pointCount++ >=DigitalDoily.MAX_STROKE_SIZE){
-				updateImage();
 				dd.newPoint(e.getX()-centX, e.getY()-centY, true);
 				pointCount=1;
 			}
@@ -186,8 +167,8 @@ public class DoilyPanel extends JPanel{
 		@Override
 		public void mousePressed(MouseEvent e) {
 			dd.clearMouseStroke();
-			updateImage();
 			dd.newPoint(e.getX()-centX,e.getY()-centY, true);
+			paintStroke(dd.getStrokes().peek());
 			pointCount=1;
 			repaint();
 		}

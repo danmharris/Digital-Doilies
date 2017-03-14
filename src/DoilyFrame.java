@@ -72,6 +72,7 @@ public class DoilyFrame extends JFrame{
 		
 		// Shows Frame
 		this.setVisible(true);
+		dp.init();
 	}
 	
 }
