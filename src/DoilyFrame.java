@@ -41,35 +41,33 @@ public class DoilyFrame extends JFrame{
 	
 
 	/**
-	 * Initialises the GUI, this is the only method which needs to be run as calls individual steps (why others private)
+	 * Initialises the GUI by instantiating all components and laying them out correctly
 	 */
 	public void init(){
 		// Setting Frame Parameters
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setSize(800,600);
 		this.setMinimumSize(new Dimension(700,500));
+		this.setLayout(new BorderLayout());		
 		
-		Container panel = this.getContentPane();
-		panel.setLayout(new BorderLayout());		
+		DoilyPanel dp = new DoilyPanel(); // DoilyPanel used to display DoilyDrawing
 		
-		DoilyPanel dp = new DoilyPanel();
+		// Side panel layout
 		JButton removeBtn = new JButton("Remove");
-		
-		
 		GalleryScrollPanel gp = new GalleryScrollPanel();
 		removeBtn.addActionListener(e->gp.removeSelectedFromGallery());
-		ControlPanel cp = new ControlPanel(dp,gp);
-		dp.getDoilyDrawing().setUndoBtn(cp.getUndoBtn());
-		
 		JPanel sidePanel = new JPanel();
 		sidePanel.setLayout(new BorderLayout());
 		sidePanel.add(gp,BorderLayout.CENTER);
-			
 		sidePanel.add(removeBtn, BorderLayout.SOUTH);
+		
+		// Control panel layout
+		ControlPanel cp = new ControlPanel(dp,gp);
+		dp.getDoilyDrawing().setUndoBtn(cp.getUndoBtn());
 		
 		this.add(dp, BorderLayout.CENTER);
 		this.add(cp, BorderLayout.SOUTH);
-		panel.add(sidePanel,BorderLayout.EAST);
+		this.add(sidePanel,BorderLayout.EAST);
 		
 		
 		// Shows Frame

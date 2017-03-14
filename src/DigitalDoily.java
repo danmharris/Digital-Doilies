@@ -19,6 +19,7 @@ public class DigitalDoily {
 	public static final int MIN_SECTORS = 2;
 	public static final int MAX_SECTORS = 36;
 	public static final int MAX_GALLERY = 12;
+	public static final int MAX_STROKE_SIZE = 200;
 	
 	/**
 	 * Main Entry Point. Initialises GUI

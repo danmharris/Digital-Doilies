@@ -11,18 +11,18 @@ import java.util.Iterator;
 import javax.swing.JPanel;
 
 /**
- * JPanel that provides the main drawing area and an interface to change properties like pen size etc.
+ * JPanel that provides the main drawing area. Draws information that is stored in a DoilyDrawing Object
  * @author dmh2g16
  *
  */
 public class DoilyPanel extends JPanel{
-	private DoilyDrawing dd;
+	private DoilyDrawing dd; // DoilyDrawing which this panel is drawing
 	private int centX, centY; // Centre position of the panel
-	private boolean doCompleteRedraw = false;
-	private BufferedImage currentDrawing;
+	private boolean doCompleteRedraw = false; // States whether the next draw of points should be a complete redraw
+	private BufferedImage currentDrawing; // Stores a cache of the current image to improve performance
+	
 	/**
-	 * Sets up the panel for drawing with default parameters set in main class
-	 * @param undoBtn
+	 * Sets up the panel for drawing by attaching it to a DoilyDrawing and setting up mouse listeners
 	 */
 	public DoilyPanel(){		
 		this.setBackground(Color.BLACK);
@@ -32,18 +32,27 @@ public class DoilyPanel extends JPanel{
 		DoilyMouseListener listener = new DoilyMouseListener();
 		this.addMouseListener(listener);
 		this.addMouseMotionListener(listener);
+		
+		// Forces the panel to do a complete redraw if the window is resized (prevents glitch with sector lines)
 		this.addComponentListener(new ComponentAdapter(){
 			@Override
 			public void componentResized(ComponentEvent e) {
-				doCompleteRedraw = true;
+				doCompleteRedraw();
 			}
 		});
 	}
 	
+	/**
+	 * Returns the doily drawing used by this panel. Provided so listeners can control this
+	 * @return
+	 */
 	public DoilyDrawing getDoilyDrawing(){
 		return this.dd;
 	}
 
+	/**
+	 * Forces a complete redraw of the image to the BufferedImage cache
+	 */
 	public void doCompleteRedraw(){
 		this.doCompleteRedraw = true;
 		updateImage();
@@ -54,7 +63,7 @@ public class DoilyPanel extends JPanel{
 
 	/**
 	 * Main drawing function. Draws sector lines if option enabled and a point under the mouse cursor (for preview).
-	 * Then draws all the points in the array, connecting lines if necessary to produce smooth lines
+	 * Then either draws all of the strokes in the stack, or the BufferedImage cache and the most recent stroke (depending on whether repaint is full)
 	 */
 	@Override
 	protected void paintComponent(Graphics g) {
@@ -69,7 +78,15 @@ public class DoilyPanel extends JPanel{
 			this.paintSectorLines(g2d);
 		}
 				
-		if(!this.doCompleteRedraw){
+		// Either iterates through all of the points if redraw full, or just draw the bufferedImage cache
+		if (this.doCompleteRedraw){
+				// Iterates through the stack to draw all the strokes
+				Iterator<DrawStroke> it = this.dd.getStrokes().iterator();
+				while (it.hasNext()){			
+					this.paintStroke(g2d, it.next());
+				}
+				this.doCompleteRedraw = false;
+		} else {
 			if (this.currentDrawing != null){
 				int height = this.currentDrawing.getHeight();
 				int width = this.currentDrawing.getWidth();
@@ -80,14 +97,7 @@ public class DoilyPanel extends JPanel{
 				this.paintStroke(g2d, this.dd.getStrokes().peek());
 			}
 			
-		} else {
-			// Iterates through the stack to draw all the strokes
-			Iterator<DrawStroke> it = this.dd.getStrokes().iterator();
-			while (it.hasNext()){			
-				this.paintStroke(g2d, it.next());
-			}
-			this.doCompleteRedraw = false;
-		}
+		} 
 			
 		// If the mouse is in the panel then paint it
 		if (this.dd.getMouseStroke()!=null){
@@ -98,6 +108,11 @@ public class DoilyPanel extends JPanel{
 		}
 	}
 	
+	/**
+	 * Paints a stroke object onto the graphics context
+	 * @param g2d Graphics context to draw this to
+	 * @param ds DrawStroke object to draw
+	 */
 	private void paintStroke(Graphics2D g2d, DrawStroke ds){
 		g2d.setColor(ds.getColour());
 		g2d.setStroke(new BasicStroke(ds.getDiameter(),BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
@@ -119,6 +134,7 @@ public class DoilyPanel extends JPanel{
 	private void paintSectorLines(Graphics2D g2d){
 		g2d.setColor(Color.WHITE);
 		for (int i = 0; i < this.dd.getSectorCount(); i++){
+			// Draws to the edge of whichever size component is larger
 			if (getHeight() > getWidth()){
 				g2d.drawLine(0, 0, 0, -(getHeight()/2));
 			} else {
@@ -128,6 +144,9 @@ public class DoilyPanel extends JPanel{
 		}
 	}
 	
+	/**
+	 * Updates the BufferedImage cache by doing a full redraw to the BufferedImage
+	 */
 	private void updateImage(){
 		BufferedImage newDrawing = new BufferedImage(getWidth(),getHeight(),BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2d = newDrawing.createGraphics();
@@ -146,12 +165,12 @@ public class DoilyPanel extends JPanel{
 		int pointCount;
 	
 		/**
-		 * If the mouse is dragged, add a point to the stroke
+		 * If the mouse is dragged, add a point to the stroke. If the stroke is long enough, break it
 		 */
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			dd.newPoint(e.getX()-centX, e.getY()-centY, false);
-			if (pointCount++ >=200){
+			if (pointCount++ >=DigitalDoily.MAX_STROKE_SIZE){
 				updateImage();
 				dd.newPoint(e.getX()-centX, e.getY()-centY, true);
 				pointCount=1;
@@ -161,7 +180,7 @@ public class DoilyPanel extends JPanel{
 		}
 
 		/**
-		 * When the mouse is pressed down, remove the preview point from the screen, add a new entry to the drawing stack
+		 * When the mouse is pressed down, remove the cursor point from the screen, add a new entry to the drawing stack
 		 * and add the first point to the stroke. Re-enables the undo button if previously disabled
 		 */
 		@Override

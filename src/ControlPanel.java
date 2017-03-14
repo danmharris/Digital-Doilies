@@ -13,6 +13,11 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 
+/**
+ * Contains all of the components and layout for the control panel. Is linked to the GalleryScrollPanel to allow save button functionality to be added
+ * @author Dan
+ *
+ */
 public class ControlPanel extends JPanel{
 	private DoilyPanel dp;
 	private JButton undoBtn; // Reverses actions taken
@@ -26,9 +31,13 @@ public class ControlPanel extends JPanel{
 	private JCheckBox reflectToggle; // Toggle whether drawn points should be reflected in each sector
 	private JButton saveBtn; // Saves current image state into the gallery
 
+	/**
+	 * Constructs a new instance of control panel, initialising all components 
+	 * @param dp DoilyPanel which this ControlPanel will be controlling
+	 * @param gp The GalleryScrollPanel that is used, so that save button functionality can be added
+	 */
 	public ControlPanel(DoilyPanel dp, GalleryScrollPanel gp){
 		this.dp = dp;
-		
 		this.initComponents();
 		this.attachListeners(gp);
 		this.addComponents();
@@ -36,8 +45,14 @@ public class ControlPanel extends JPanel{
 		
 	}
 
+	/**
+	 * Attaches new listener objects to all of the components
+	 * @param gp GalleryScrollPanel used for save button
+	 */
 	private void attachListeners(GalleryScrollPanel gp){
 		DoilyDrawing dd = dp.getDoilyDrawing();
+		
+		// Below use lambda commands to simplify anonymouse classes
 		clearBtn.addActionListener(e->dd.clear());
 		undoBtn.addActionListener(e->dd.undo());
 		sectorSpin.addChangeListener(e->dd.setSectorCount((int)sectorSpin.getValue()));
@@ -46,8 +61,8 @@ public class ControlPanel extends JPanel{
 		reflectToggle.addChangeListener(e->dd.setReflect(reflectToggle.isSelected()));
 		sizeSlider.addChangeListener(e->dd.setDiameter(sizeSlider.getValue()));
 		
+		// Full anonymous class used here as more complex functionality. Saves to the gallery and then disables the button if full
 		this.saveBtn.addActionListener(new ActionListener(){
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				gp.saveToGallery(dp);
@@ -59,6 +74,9 @@ public class ControlPanel extends JPanel{
 		});
 	}
 
+	/**
+	 * Initialises all of the components and sets the appropriate properties for them
+	 */
 	private void initComponents(){
 		this.undoBtn = new JButton("Undo");
 		undoBtn.setEnabled(false);
@@ -85,6 +103,9 @@ public class ControlPanel extends JPanel{
 		this.saveBtn = new JButton("Save");
 	}
 
+	/**
+	 * Adds all of the components to the ControlPanel and configures the layout for them
+	 */
 	private void addComponents(){
 		// Creates grid layout to combine the sizeSlider and its label
 		JPanel sliderPanel = new JPanel();
@@ -120,10 +141,10 @@ public class ControlPanel extends JPanel{
 		this.add(saveBtn);
 	}
 	
-	public JButton getSaveBtn(){
-		return this.saveBtn;
-	}
-	
+	/**
+	 * Retrieves the undo button, so that the panel can control it
+	 * @return Undo Button object reference
+	 */
 	public JButton getUndoBtn(){
 		return this.undoBtn;
 	}
