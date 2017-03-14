@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.util.Stack;
 
 import javax.swing.JButton;
@@ -41,7 +42,7 @@ public class DoilyDrawing {
 			drawing.addAll(this.strokes);
 			this.clearedDrawings.push(drawing);
 			this.strokes.clear();
-			dp.repaint();
+			dp.doCompleteRedraw();
 		}
 	}
 
@@ -83,7 +84,7 @@ public class DoilyDrawing {
 	 */
 	public void setSectorLineVisible(boolean visible){
 		this.sectorLinesVisible = visible;
-		dp.repaint();
+		dp.doCompleteRedraw();
 	}
 
 	/**
@@ -92,7 +93,7 @@ public class DoilyDrawing {
 	 */
 	public void setSectorCount(int sectorCount){
 		this.sectorCount = sectorCount;
-		dp.repaint();
+		dp.doCompleteRedraw();
 	}
 
 	/**
@@ -105,7 +106,8 @@ public class DoilyDrawing {
 		} else if (!this.strokes.isEmpty()){
 			this.strokes.pop();
 		}
-		dp.repaint();
+		dp.doCompleteRedraw();
+
 		if (this.strokes.isEmpty() && this.clearedDrawings.isEmpty() && this.undoBtn != null){
 			this.undoBtn.setEnabled(false);
 		}

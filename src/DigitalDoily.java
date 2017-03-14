@@ -1,5 +1,7 @@
 import java.awt.Color;
 
+import javax.swing.SwingUtilities;
+
 /**
  * Main entry point for application, simply creates an initialises a new frame
  * @author dmh2g16
@@ -15,7 +17,7 @@ public class DigitalDoily {
 	public static final int MIN_DIAMETER = 2;
 	public static final int MAX_DIAMETER = 20;
 	public static final int MIN_SECTORS = 2;
-	public static final int MAX_SECTORS = 24;
+	public static final int MAX_SECTORS = 36;
 	public static final int MAX_GALLERY = 12;
 	
 	/**
@@ -23,7 +25,14 @@ public class DigitalDoily {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		DoilyFrame df = new DoilyFrame();
-		df.init();
+		SwingUtilities.invokeLater(new Runnable(){
+			@Override
+			public void run() {
+				DoilyFrame df = new DoilyFrame();
+				df.init();
+			}
+			
+		});
+		
 	}
 }
