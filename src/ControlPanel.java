@@ -12,6 +12,8 @@ import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Contains all of the components and layout for the control panel. Is linked to the GalleryScrollPanel to allow save button functionality to be added
@@ -19,7 +21,7 @@ import javax.swing.SwingConstants;
  *
  */
 public class ControlPanel extends JPanel{
-	private DoilyPanel dp;
+	private DoilyPanel doilyPanel;
 	private JButton undoBtn; // Reverses actions taken
 	private JButton clearBtn; // Erases the drawing
 	private JLabel sectorLbl; // Label attached to sectorSpin
@@ -37,11 +39,11 @@ public class ControlPanel extends JPanel{
 	 * @param gp The GalleryScrollPanel that is used, so that save button functionality can be added
 	 */
 	public ControlPanel(DoilyPanel dp, GalleryScrollPanel gp){
-		this.dp = dp;
+		this.doilyPanel = dp;
 		this.initComponents();
 		this.attachListeners(gp);
 		this.addComponents();
-		
+		gp.setSaveBtn(this.saveBtn); // Attaches to Gallery so it can manage enabling the button
 		
 	}
 
@@ -50,22 +52,22 @@ public class ControlPanel extends JPanel{
 	 * @param gp GalleryScrollPanel used for save button
 	 */
 	private void attachListeners(GalleryScrollPanel gp){
-		DoilyDrawing dd = dp.getDoilyDrawing();
+		DoilyDrawing dd = doilyPanel.getDoilyDrawing();
 		
 		// Below use lambda commands to simplify anonymouse classes
 		clearBtn.addActionListener(e->dd.clear());
 		undoBtn.addActionListener(e->dd.undo());
 		sectorSpin.addChangeListener(e->dd.setSectorCount((int)sectorSpin.getValue()));
 		colourBtn.addActionListener(e->dd.setColour(JColorChooser.showDialog(null, "Select New Colour", dd.getColour())));
-		sectorToggle.addChangeListener(e->dd.setSectorLineVisible(sectorToggle.isSelected()));
-		reflectToggle.addChangeListener(e->dd.setReflect(reflectToggle.isSelected()));
+		sectorToggle.addItemListener(e->dd.setSectorLineVisible(sectorToggle.isSelected()));
+		reflectToggle.addItemListener(e->dd.setReflect(reflectToggle.isSelected()));
 		sizeSlider.addChangeListener(e->dd.setDiameter(sizeSlider.getValue()));
 		
 		// Full anonymous class used here as more complex functionality. Saves to the gallery and then disables the button if full
 		this.saveBtn.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				gp.saveToGallery(dp);
+				gp.saveToGallery(doilyPanel);
 				if (gp.isFull()){
 					saveBtn.setEnabled(false);
 				}

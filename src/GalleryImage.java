@@ -16,7 +16,7 @@ import javax.swing.JToggleButton;
  *
  */
 public class GalleryImage extends JToggleButton{
-	private BufferedImage im; // Buffered image containing actual drawing
+	private BufferedImage img; // Buffered image containing actual drawing
 	private boolean selected = false; // Whether the image is currently selected
 	
 	/**
@@ -39,8 +39,8 @@ public class GalleryImage extends JToggleButton{
 		this.setPreferredSize(size);
 		
 		// Creates a new buffered image of new size and draws scaled image to it
-		this.im = new BufferedImage(width,height,BufferedImage.TYPE_INT_ARGB);
-		this.im.createGraphics().drawImage(im.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
+		this.img = new BufferedImage(width,height,BufferedImage.TYPE_INT_ARGB);
+		this.img.createGraphics().drawImage(im.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
 		
 		// Anonymous class controlling logic when image is selected (using button group)
 		this.addItemListener(new ItemListener(){
@@ -65,11 +65,11 @@ public class GalleryImage extends JToggleButton{
 	protected void paintComponent(Graphics g) {
 		// If it is selected create a blue border around the image (and clip the drawing of the image to inside this)
 		if (selected == true){
-			g.setColor(Color.blue);
+			g.setColor(Color.RED);
 			g.fillRect(0, 0, this.getWidth(), this.getHeight());
 			g.setClip(5,5,this.getWidth()-10,this.getHeight()-10);
 		}
-		g.drawImage(im, 0, 0,null); // Paints the BufferedImage onto the component
+		g.drawImage(img, 0, 0,null); // Paints the BufferedImage onto the component
 	}
 
 }

@@ -99,7 +99,7 @@ public class DoilyDrawing {
 	 */
 	public void setSectorLineVisible(boolean visible){
 		this.sectorLinesVisible = visible;
-		dp.redrawImage();
+		dp.repaint();
 	}
 
 	/**

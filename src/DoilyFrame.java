@@ -29,9 +29,7 @@ import javax.swing.event.ChangeListener;
  * @author dmh2g16
  *
  */
-public class DoilyFrame extends JFrame{
-	private DoilyPanel dp; // Panel where drawing takes place	
-	
+public class DoilyFrame extends JFrame{	
 	/**
 	 * Constructs a new frame with default title Digital Doily
 	 */

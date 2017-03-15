@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -14,9 +15,8 @@ import javax.swing.JScrollPane;
  */
 public class GalleryScrollPanel extends JScrollPane{
 	private JPanel galleryPanel; // Holds all the gallery images
-	private ButtonGroup imageGroup = new ButtonGroup(); // Button group for gallery image selection logic
 	private ArrayList<GalleryImage> images = new ArrayList<GalleryImage>(); // Images stored in gallery
-	
+	private JButton saveBtn;
 	/**
 	 * Constructs a new scroll panel and add a gallery panel to it
 	 */
@@ -27,6 +27,11 @@ public class GalleryScrollPanel extends JScrollPane{
 		
 		this.setPreferredSize(new Dimension(220, 700));
 		this.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		this.getVerticalScrollBar().setUnitIncrement(10);
+	}
+	
+	public void setSaveBtn(JButton saveBtn){
+		this.saveBtn = saveBtn;
 	}
 	
 	/**
@@ -45,7 +50,6 @@ public class GalleryScrollPanel extends JScrollPane{
 		GalleryImage image = new GalleryImage(dp, this.getWidth()-20);
 		galleryPanel.add(image);
 		images.add(image);
-		imageGroup.add(image);
 		this.revalidate();
 		this.repaint();
 	}
@@ -59,12 +63,14 @@ public class GalleryScrollPanel extends JScrollPane{
 			GalleryImage gi = it.next();
 			if (gi.isSelected()){
 				it.remove();
-				imageGroup.remove(gi);
 				galleryPanel.remove(gi);
 				this.revalidate();
 				this.repaint();
-				break;
 			}
+		}
+		
+		if (this.saveBtn!=null && !isFull()){
+			this.saveBtn.setEnabled(true);
 		}
 	}
 }
