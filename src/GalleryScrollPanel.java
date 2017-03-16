@@ -16,6 +16,7 @@ import javax.swing.JScrollPane;
 public class GalleryScrollPanel extends JScrollPane{
 	private JPanel galleryPanel; // Holds all the gallery images
 	private ArrayList<GalleryImage> images = new ArrayList<GalleryImage>(); // Images stored in gallery
+	private ButtonGroup imageGroup = new ButtonGroup(); // Restricts the user to selecting only one image at a time
 	private JButton saveBtn;
 	/**
 	 * Constructs a new scroll panel and add a gallery panel to it
@@ -30,6 +31,10 @@ public class GalleryScrollPanel extends JScrollPane{
 		this.getVerticalScrollBar().setUnitIncrement(10);
 	}
 	
+	/**
+	 * Attaches Save Button to this panel so that it can be enabled/disabled depening on the size of the gallery
+	 * @param saveBtn Save Button used to save to the gallery
+	 */
 	public void setSaveBtn(JButton saveBtn){
 		this.saveBtn = saveBtn;
 	}
@@ -50,6 +55,7 @@ public class GalleryScrollPanel extends JScrollPane{
 		GalleryImage image = new GalleryImage(dp, this.getWidth()-20);
 		galleryPanel.add(image);
 		images.add(image);
+		imageGroup.add(image);
 		this.revalidate();
 		this.repaint();
 	}
@@ -61,14 +67,18 @@ public class GalleryScrollPanel extends JScrollPane{
 		Iterator<GalleryImage> it = images.iterator();
 		while (it.hasNext()){
 			GalleryImage gi = it.next();
+			// If the selected image is found, it is removed from the panel, button group and list of gallery images
 			if (gi.isSelected()){
 				it.remove();
 				galleryPanel.remove(gi);
+				imageGroup.remove(gi);
 				this.revalidate();
 				this.repaint();
+				break;
 			}
 		}
 		
+		// Re-enables the save button if present
 		if (this.saveBtn!=null && !isFull()){
 			this.saveBtn.setEnabled(true);
 		}

@@ -10,5 +10,5 @@ A full redraw is done (iterating through the stack) whenever an undo is called, 
 The last one is due to the fact that strokes can be recorded if the user drags the mouse outside the window, and the BufferedImage does not draw this initially.
 
 One interesting implementation choice I have made is to model the Gallery as a series of JToggleButtons, as this allows the functionality of the selection to be altered easily.
-Currently you can select multiple items to remove, but simply adding these to a button group will restrict it to only one selection at a time.
-
+For instance, currently all of these JToggleButtons are added to a button group, so that only one image can be selected at a time. If the desired behaviour is for multiple selections,
+the button group simply needs removing.

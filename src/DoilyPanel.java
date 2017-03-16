@@ -79,16 +79,18 @@ public class DoilyPanel extends JPanel{
 		
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.translate(centX, centY); // Translates so 0,0 is in centre (allows relative drawing)
-		if (this.drawing.drawSectorLines()){
-			this.paintSectorLines(g2d);
-		}
+		
 		
 		// Only draw the image if it is initialised
 		if (this.drawingImg != null){
 			int height = this.drawingImg.getHeight();
 			int width = this.drawingImg.getWidth();
 			g2d.drawImage(this.drawingImg, -(width/2), -(height/2), null);
-		}			
+		}	
+		
+		if (this.drawing.drawSectorLines()){
+			this.paintSectorLines(g2d);
+		}
 			
 		// If the mouse is in the panel then paint it
 		if (this.drawing.getMouseStroke()!=null){

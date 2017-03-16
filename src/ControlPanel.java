@@ -21,7 +21,7 @@ import javax.swing.event.ChangeListener;
  *
  */
 public class ControlPanel extends JPanel{
-	private DoilyPanel doilyPanel;
+	private DoilyPanel doilyPanel; // Doily Panel that these buttons control
 	private JButton undoBtn; // Reverses actions taken
 	private JButton clearBtn; // Erases the drawing
 	private JLabel sectorLbl; // Label attached to sectorSpin
@@ -54,7 +54,7 @@ public class ControlPanel extends JPanel{
 	private void attachListeners(GalleryScrollPanel gp){
 		DoilyDrawing dd = doilyPanel.getDoilyDrawing();
 		
-		// Below use lambda commands to simplify anonymouse classes
+		// Below use lambda commands to simplify anonymous classes
 		clearBtn.addActionListener(e->dd.clear());
 		undoBtn.addActionListener(e->dd.undo());
 		sectorSpin.addChangeListener(e->dd.setSectorCount((int)sectorSpin.getValue()));
