@@ -1,5 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ComponentAdapter;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -39,6 +40,11 @@ public class DoilyFrame extends JFrame{
 		sidePanel.setLayout(new BorderLayout());
 		sidePanel.add(gp,BorderLayout.CENTER);
 		sidePanel.add(removeBtn, BorderLayout.SOUTH);
+		sidePanel.addComponentListener(new ComponentAdapter(){
+			public void componentResized(java.awt.event.ComponentEvent e) {
+				removeBtn.repaint(); // Prevents glitch on button on resize
+			};
+		});
 		
 		// Control panel layout
 		ControlPanel cp = new ControlPanel(dp,gp);
