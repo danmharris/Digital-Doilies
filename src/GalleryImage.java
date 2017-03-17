@@ -62,12 +62,14 @@ public class GalleryImage extends JToggleButton{
 	 */
 	@Override
 	protected void paintComponent(Graphics g) {
-		// If it is selected create a blue border around the image (and clip the drawing of the image to inside this)
+		// If it is selected create a blue border around the image, gray if not selected
 		if (selected == true){
 			g.setColor(Color.RED);
-			g.fillRect(0, 0, this.getWidth(), this.getHeight());
-			g.setClip(5,5,this.getWidth()-10,this.getHeight()-10);
+		} else {
+			g.setColor(Color.GRAY);
 		}
+		g.fillRect(0, 0, this.getWidth(), this.getHeight());
+		g.setClip(5,5,this.getWidth()-10,this.getHeight()-10);
 		g.drawImage(img, 0, 0,null); // Paints the BufferedImage onto the component
 	}
 
