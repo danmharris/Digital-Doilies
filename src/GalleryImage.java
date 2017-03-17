@@ -5,7 +5,6 @@ import java.awt.Image;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
-import java.util.Stack;
 
 import javax.swing.JToggleButton;
 

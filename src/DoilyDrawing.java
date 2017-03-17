@@ -1,5 +1,4 @@
 import java.awt.Color;
-import java.awt.image.BufferedImage;
 import java.util.Stack;
 
 import javax.swing.JButton;
