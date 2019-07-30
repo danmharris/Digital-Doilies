@@ -1,8 +1,13 @@
-Digital Doily Coursework: Information
--------------------------------------
+# Digital Doilies
+## Year 1, Semester 2 Coursework in Java Programming
+
+This is a Java Swing application that allows the user to draw digital [doilies](https://en.wikipedia.org/wiki/Doily) and save them as image files. It supports multiple colours, segments and pen sizes.
+
+### Running
 The main entry point for this application is the DigitalDoily class. In here all of the constants are located for setting the initial parameters
 for the drawing, such as default pen colour, size etc.
 
+### Approach
 My approach for this was to store the drawing as a stack of strokes inside a Path2D object. This allows me to easily draw the strokes onto
 the panel by iterating through the stack and prevents unnecessary redundancy of data for each point.
 However, the strokes are never drawn directly to the panel, instead they are drawn to a BufferedImage which is then drawn to the panel to aid performance.
